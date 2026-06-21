@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "mc-triggerbot-fabric",
+  "version": "${version}",
+  "name": "MC TriggerBot Fabric",
+  "description": "Advanced PvP TriggerBot with intelligent cooldown detection for Minecraft 1.20.1",
+  "authors": ["samisitocraft-boop"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/triggerbot/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.triggerbot.TriggerBotMod"
+    ]
+  },
+  "mixins": [
+    "triggerbot.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.22",
+    "minecraft": "1.20.1",
+    "java": ">=17"
+  }
+}
