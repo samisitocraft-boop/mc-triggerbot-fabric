@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-
+#!/bin/sh
 #
 # Copyright 2015 the original author or authors.
 #
@@ -24,38 +23,36 @@
 
 # Attempt to set APP_HOME
 # Resolve links: $0 may be a symlink
-app_path=$0
-
+PRG="$0"
 # Need this for daisy-chained symlinks.
-while
-    APP_HOME=${app_path%"${app_path##*/}"}
-    [ -L "$app_path" ]
-do
-    app_path=$(ls -ld -- "$app_path") ||
-    exit 1
-    app_path=$([[ $app_path =~ ^(.*)-\>  (.*)$ ]] && echo "${BASH_REMATCH[2]}" || echo "$app_path")
+while [ -h "$PRG" ] ; do
+    ls -ld "$PRG"
+    link=`ls -ld "$PRG" | sed 's/.*-> //'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
 done
-
-APP_HOME=$(cd "${APP_HOME}" && pwd -P) || exit
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
 
 APP_NAME="Gradle"
-APP_BASE_NAME=${0##*/}
-export APP_HOME
-export APP_BASE_NAME
+APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS='" -Xmx64m" "-Xms64m"'
+DEFAULT_JVM_OPTS="-Xmx64m -Xms64m"
 
 # Use the maximum available, or set MAX_FD != maximum.
-MAX_FD=maximum
+MAX_FD="maximum"
 
-warn()
-{
-    echo "$*" >&2
+warn ( ) {
+    echo "$*"
 }
 
-die()
-{
+die ( ) {
     echo
     echo "$*"
     echo
@@ -64,55 +61,48 @@ die()
 
 # OS specific support (must be 'true' or 'false').
 darwin=false
-msys=false
-cygwin=false
-nativewin=false
-case "$(uname)" in
+nix=false
+case "`uname`" in
   Darwin* )
-        darwin=true
-        ;;
+    darwin=true
+    ;;
   MINGW* )
-        msys=true
-        ;;
-  CYGWIN* )
-        cygwin=true
-        ;;
-  MSYS* )
-        nativewin=true
-        ;;
+    msys=true
+    ;;
+  NONSTOP* )
+    nonstop=true
+    ;;
 esac
 
 # Increase the maximum file descriptors if we can.
-if ! "$cygwin" && ! "$darwin" && ! "$msys" && ! "$nativewin" ; then
-    case $( ulimit -S -n ) in
-      'unlimited'|*'65536'*)
-        ulimit -n 1048576
-        ;;
-      *)
+if [ "$darwin" = false -a "$nix" = false ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
         warn "Could not query maximum file descriptor limit"
-        ;;
-    esac
+    fi
 fi
 
 # For Darwin, add options to specify how the application appears in the dock
 if $darwin; then
-    DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS '-Xdock:name=Gradle' '-Xdock:icon=$APP_HOME/media/gradle.icns'"
+    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
 fi
 
 # For Cygwin or MSYS, switch paths to Windows format before running java
-if "$cygwin" || "$msys" ; then
-    APP_HOME=$( cygpath --path --mixed "$APP_HOME" )
-    APP_BASE_NAME=$( cygpath --file-name-only "$0" )
-    CLASSPATH=$( cygpath --path --mixed "$CLASSPATH" )
-    JAVACMD=$( cygpath --unix "$JAVACMD" )
-    for arg in "$@" ; do
-        if [[ "$arg" =~ ^-.*\\.jar$ ]] ; then
-            arg=$( cygpath --path --windows "$arg" )
-        fi
-        APP_ARGS+=( "$arg" )
-    done
+if [ "$cygwin" = true -o "$msys" = true ] ; then
+    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+    APP_BASE_NAME=`cygpath --file-name-only "$0"`
+    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+    JAVACMD=`cygpath --unix "$JAVACMD"`
 fi
 
 # This is normally unused
 app_base_name=$APP_BASE_NAME
-exec "$JAVACMD" "${DEFAULT_JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+exec "$JAVACMD" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
